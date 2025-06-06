@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rapport Mensuel</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="p-4">
+  <h1 class="text-center mb-4">Rapport Mensuel : <%= month %>/<%= year %></h1>
+
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <form method="GET" action="/monthly-report" class="d-flex gap-2">
+        <select name="month" class="form-select w-auto">
+        <% for (let m = 1; m <= 12; m++) { %>
+            <option value="<%= m %>" <%= m === month ? "selected" : "" %>><%= m %></option>
+        <% } %>
+        </select>
+        <select name="year" class="form-select w-auto">
+        <% for (let y = year - 2; y <= year + 2; y++) { %>
+            <option value="<%= y %>" <%= y === year ? "selected" : "" %>><%= y %></option>
+        <% } %>
+        </select>
+        <button class="btn btn-dark">Afficher</button>
+    </form>
+
+    <a href="/" class="btn btn-dark">Retour vers les semaines</a>
+  </div>
+
+  <table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Jour</th>
+            <% workers.forEach(w => { %>
+            <th class="text-center"><%= w.name %></th>
+            <% }) %>
+        </tr>
+    </thead>
+   <tbody>
+    <% days.forEach(date => { %>
+        <tr>
+        <td><%= dayjs(date).format("DD-MM-YYYY") %></td>
+        <% workers.forEach(w => { 
+            const log = fullLogs[date]?.[w.id] || {};
+            const slot1 = (log.start1 != null && log.end1 != null)
+            ? `${parseInt(log.start1)}–${parseInt(log.end1)}`
+            : "";
+            const slot2 = (log.start2 != null && log.end2 != null)
+            ? `${parseInt(log.start2)}–${parseInt(log.end2)}`
+            : "";
+            const text = [slot1, slot2].filter(Boolean).join(" / ");
+        %>
+            <td class="text-center"><%= text %></td>
+        <% }) %>
+        </tr>
+    <% }) %>
+    </tbody>
+
+    <tfoot>
+      <tr class="fw-bold bg-light">
+            <td>Total heures</td>
+            <% workers.forEach(w => { %>
+            <td class="text-center"><%= hoursTotals[w.id] || 0 %> h</td>
+            <% }) %>
+        </tr>
+        <tr class="fw-bold bg-light">
+            <td>Jours travaillés</td>
+            <% workers.forEach(w => { %>
+            <td class="text-center"><%= daysWorked[w.id] || 0 %></td>
+            <% }) %>
+        </tr>
+    </tfoot>
+  </table>
+</body>
+</html>
