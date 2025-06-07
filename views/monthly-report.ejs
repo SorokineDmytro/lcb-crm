@@ -31,16 +31,16 @@
 
   <table class="table table-bordered table-sm">
     <thead>
-        <tr>
+        <tr class="text-center">
             <th>Jour</th>
             <% workers.forEach(w => { %>
-            <th class="text-center"><%= w.name %></th>
+            <th><%= w.name %></th>
             <% }) %>
         </tr>
     </thead>
    <tbody>
     <% days.forEach(date => { %>
-        <tr>
+        <tr class="text-center">
         <td><%= dayjs(date).format("DD-MM-YYYY") %></td>
         <% workers.forEach(w => { 
             const log = fullLogs[date]?.[w.id] || {};
@@ -68,13 +68,13 @@
 
 
     <tfoot>
-      <tr class="fw-bold bg-light">
+      <tr class="fw-bold bg-light text-center">
             <td>Total heures</td>
             <% workers.forEach(w => { %>
             <td class="text-center"><%= hoursTotals[w.id] || 0 %> h</td>
             <% }) %>
         </tr>
-        <tr class="fw-bold bg-light">
+        <tr class="fw-bold bg-light text-center">
             <td>Jours travaillés</td>
             <% workers.forEach(w => { %>
             <td class="text-center"><%= daysWorked[w.id] || 0 %></td>
