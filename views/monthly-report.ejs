@@ -22,7 +22,11 @@
         <button class="btn btn-dark">Afficher</button>
     </form>
 
-    <a href="/" class="btn btn-dark">Retour vers les semaines</a>
+    <div class="d-flex gap-5">
+        <a href="/monthly-report-pdf?month=<%= month %>&year=<%= year %>" target="_blank" class="btn btn-outline-dark">Imprimer</a>
+        <a href="/" class="btn btn-dark">Retour vers les semaines</a>
+        <a href="/workers" class="btn btn-dark">Gestion des employés</a>
+    </div>
   </div>
 
   <table class="table table-bordered table-sm">
@@ -40,19 +44,28 @@
         <td><%= dayjs(date).format("DD-MM-YYYY") %></td>
         <% workers.forEach(w => { 
             const log = fullLogs[date]?.[w.id] || {};
-            const slot1 = (log.start1 != null && log.end1 != null)
-            ? `${parseInt(log.start1)}–${parseInt(log.end1)}`
-            : "";
-            const slot2 = (log.start2 != null && log.end2 != null)
-            ? `${parseInt(log.start2)}–${parseInt(log.end2)}`
-            : "";
-            const text = [slot1, slot2].filter(Boolean).join(" / ");
+            let cellText = "";
+
+            if (log.status === "C") {
+                cellText = "Congé";
+            } else if (log.status === "R") {
+                cellText = "Repos";
+            } else {
+                const slot1 = (log.start1 != null && log.end1 != null)
+                ? `${parseInt(log.start1)}–${parseInt(log.end1)}`
+                : "";
+                const slot2 = (log.start2 != null && log.end2 != null)
+                ? `${parseInt(log.start2)}–${parseInt(log.end2)}`
+                : "";
+                cellText = [slot1, slot2].filter(Boolean).join(" / ");
+            }
         %>
-            <td class="text-center"><%= text %></td>
+            <td class="text-center"><%= cellText %></td>
         <% }) %>
         </tr>
     <% }) %>
     </tbody>
+
 
     <tfoot>
       <tr class="fw-bold bg-light">

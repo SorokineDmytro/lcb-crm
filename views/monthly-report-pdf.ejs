@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rapport Mensuel PDF</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    @media print {
+      @page {
+        size: A3;
+        margin: 1cm;
+      }
+    }
+  </style>
+</head>
+<body class="p-4">
+  <h1 class="text-center mb-4">Rapport Mensuel : <%= month %>/<%= year %></h1>
+
+  <table class="table table-bordered table-sm text-center">
+    <thead>
+      <tr>
+        <th >Jour</th>
+        <% workers.forEach(w => { %>
+          <th><%= w.name %></th>
+        <% }) %>
+      </tr>
+    </thead>
+    <tbody>
+      <% days.forEach(date => { %>
+        <tr>
+          <td><%= dayjs(date).format("DD-MM-YYYY") %></td>
+          <% workers.forEach(w => {
+            const log = fullLogs[date]?.[w.id] || {};
+            let cellText = "";
+            if (log.status === "C") cellText = "Congé";
+            else if (log.status === "R") cellText = "Repos";
+            else {
+              const slot1 = (log.start1 != null && log.end1 != null) ? `${parseInt(log.start1)}–${parseInt(log.end1)}` : "";
+              const slot2 = (log.start2 != null && log.end2 != null) ? `${parseInt(log.start2)}–${parseInt(log.end2)}` : "";
+              cellText = [slot1, slot2].filter(Boolean).join(" / ");
+            }
+          %>
+            <td><%= cellText %></td>
+          <% }) %>
+        </tr>
+      <% }) %>
+    </tbody>
+    <tfoot>
+      <tr class="fw-bold bg-light">
+        <td>Total heures</td>
+        <% workers.forEach(w => { %>
+          <td><%= hoursTotals[w.id] || 0 %> h</td>
+        <% }) %>
+      </tr>
+      <tr class="fw-bold bg-light">
+        <td>Jours travaillés</td>
+        <% workers.forEach(w => { %>
+          <td><%= daysWorked[w.id] || 0 %></td>
+        <% }) %>
+      </tr>
+    </tfoot>
+  </table>
+</body>
+</html>

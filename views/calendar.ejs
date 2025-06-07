@@ -7,22 +7,26 @@
 <body class="p-4">
 
   <!-- Week navigation and jump -->
-  <div class="d-flex flex-wrap justify-content-center align-items-center gap-5 mb-3">
-    <a href="/monthly-report" class="btn btn-dark">Rapport mensuel</a>
-    
+  <div class="d-flex flex-wrap justify-content-evenly align-items-center mb-4">
     <div class="d-flex justify-content-center align-items-center gap-2" >
       <a href="/?week=<%= prevWeek %>" class="btn btn-dark">Semaine précédente</a>
       <a href="/?week=today" class="btn btn-outline-dark">Semaine actuelle</a>
       <a href="/?week=<%= nextWeek %>" class="btn btn-dark">Semaine suivante</a>
     </div>
-
+    
+    <h1 class="text-center fs-3">Semaine <%= weekNumber %> — du <%= weekStart %> au <%= weekEnd %></h1>
+    
     <form method="GET" action="/" class="d-flex align-items-center gap-2">
       <input type="date" name="week" value="<%= weekStartRaw %>" class="form-control" required>
       <button type="submit" class="btn w-100 btn-dark">Aller à la semaine</button>
     </form>
-  </div>
 
-  <h1 class="text-center fs-3 mb-4">Semaine <%= weekNumber %> — du <%= weekStart %> au <%= weekEnd %></h1>
+    <div class="d-flex gap-5">
+      <a href="/calendar-pdf?<%= weekStartRaw ? `week=${weekStartRaw}` : '' %>" target="_blank" class="btn btn-outline-dark">Imprimer</a>
+      <a href="/monthly-report" class="btn btn-dark">Rapport mensuel</a>
+      <a href="/workers" class="btn btn-dark">Gestion des employés</a>
+    </div>
+  </div>
 
   <form method="POST" action="/save">
     <input type="hidden" name="weekStart" value="<%= weekStartRaw %>">
@@ -32,8 +36,7 @@
           <th class="text-center">Employé</th>
           <% weekDays.forEach(day => { %>
             <th class="text-center">
-              <div><%= day.label %></div>
-              <div><%= day.display %></div>
+              <div><%= day.label %> - <%= day.display %></div>
             </th>
           <% }); %>
           <th class="text-center">Total (heures)</th>
@@ -44,13 +47,19 @@
             const workerId = worker.id;
         %>
           <tr>
-            <td class="p-3 fw-bold fs-5 text-center"><%= worker.name %></td>
+            <td class="p-3 fw-bold fs-4 text-center"><%= worker.name %></td>
             <% weekDays.forEach(day => {
                 const isoDate = day.iso;
                 const log = logs[workerId]?.[isoDate] || {};
             %>
               <td class="p-3 text-center">
-                <select name="entries[<%= workerId %>][<%= isoDate %>][status]" class="form-select form-select-sm mb-2">
+                <select name="entries[<%= workerId %>][<%= isoDate %>][status]" class="form-select form-select-sm mb-2"
+                  style="
+                  <% if (log.status === 'C') { %> background-color: #fcbcb8;
+                  <% } else if (log.status === 'R') { %> background-color: #ffd972;
+                  <% } else if (log.start1 != null && log.end1 != null) { %> background-color: #a7e8bd;
+                  <% } %>
+                ">
                   <option value="" <%= !log.status ? 'selected' : '' %>>Travail</option>
                   <option value="R" <%= log.status === 'R' ? 'selected' : '' %>>Repos</option>
                   <option value="C" <%= log.status === 'C' ? 'selected' : '' %>>Congé</option>
@@ -58,21 +67,24 @@
 
                 <div class="time-inputs">
                   <fieldset>
-                    <label class="mb-2">Temps principal</label>
-                    <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][start1]"
-                          value="<%= (log.start1 !== undefined && log.start1 !== null && log.start1 !== '') 
-                                      ? (Number.isInteger(log.start1) 
-                                          ? log.start1 
-                                          : parseFloat(log.start1).toFixed(1).replace(/\.0$/, '')) 
-                                      : '' %>"
-                          min="0" max="23" step="1" class="form-control form-control-sm mb-1" placeholder="Début (0–23)">
-                    <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][end1]"
-                          value="<%= (log.end1 !== undefined && log.end1 !== null && log.end1 !== '') 
-                                      ? (Number.isInteger(log.end1) 
-                                          ? log.end1 
-                                          : parseFloat(log.end1).toFixed(1).replace(/\.0$/, '')) 
-                                      : '' %>"
-                          min="0" max="23" step="1" class="form-control form-control-sm mb-1" placeholder="Fin (0–23)">
+                    <label class="mb-2">Temps principal (0 - 23)</label>
+                    <div class="d-flex gap-2">
+                      <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][start1]"
+                            value="<%= (log.start1 !== undefined && log.start1 !== null && log.start1 !== '') 
+                                        ? (Number.isInteger(log.start1) 
+                                            ? log.start1 
+                                            : parseFloat(log.start1).toFixed(1).replace(/\.0$/, '')) 
+                                        : '' %>"
+                            min="0" max="23" step="1" class="form-control form-control-sm w-50 fw-bold text-center mb-1" placeholder="Début">
+                      -
+                      <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][end1]"
+                            value="<%= (log.end1 !== undefined && log.end1 !== null && log.end1 !== '') 
+                                        ? (Number.isInteger(log.end1) 
+                                            ? log.end1 
+                                            : parseFloat(log.end1).toFixed(1).replace(/\.0$/, '')) 
+                                        : '' %>"
+                            min="0" max="23" step="1" class="form-control form-control-sm w-50 fw-bold text-center mb-1" placeholder="Fin">
+                    </div>
                   </fieldset>
 
                   <button type="button" class="btn btn-sm btn-outline-secondary mt-2 mb-1 toggle-secondary">
@@ -80,32 +92,36 @@
                   </button>
 
                   <fieldset class="hoursSecondary <%= (log.start2 || log.end2) ? '' : 'd-none' %>">
-                    <label class="mb-2">Temps secondaire</label>
-                    <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][start2]"
-                          value="<%= (log.start2 !== undefined && log.start2 !== null && log.start2 !== '') 
-                                      ? (Number.isInteger(log.start2) 
-                                          ? log.start2 
-                                          : parseFloat(log.start2).toFixed(1).replace(/\.0$/, '')) 
-                                      : '' %>"
-                          min="0" max="23" step="1" class="form-control form-control-sm mb-1" placeholder="Début (0–23)">
-                    <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][end2]"
-                          value="<%= (log.end2 !== undefined && log.end2 !== null && log.end2 !== '') 
-                                      ? (Number.isInteger(log.end2) 
-                                          ? log.end2 
-                                          : parseFloat(log.end2).toFixed(1).replace(/\.0$/, '')) 
-                                      : '' %>"
-                          min="0" max="23" step="1" class="form-control form-control-sm mb-1" placeholder="Fin (0–23)">
+                    <label class="mb-2">Temps secondaire (0 - 23)</label>
+                    <div class="d-flex gap-2">
+                      <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][start2]"
+                            value="<%= (log.start2 !== undefined && log.start2 !== null && log.start2 !== '') 
+                                        ? (Number.isInteger(log.start2) 
+                                            ? log.start2 
+                                            : parseFloat(log.start2).toFixed(1).replace(/\.0$/, '')) 
+                                        : '' %>"
+                            min="0" max="23" step="1" class="form-control form-control-sm w-50 fw-bold text-center mb-1" placeholder="Début">
+                      <input type="number" name="entries[<%= workerId %>][<%= isoDate %>][end2]"
+                            value="<%= (log.end2 !== undefined && log.end2 !== null && log.end2 !== '') 
+                                        ? (Number.isInteger(log.end2) 
+                                            ? log.end2 
+                                            : parseFloat(log.end2).toFixed(1).replace(/\.0$/, '')) 
+                                        : '' %>"
+                            min="0" max="23" step="1" class="form-control form-control-sm w-50 fw-bold text-center mb-1" placeholder="Fin">
+                    </div>
                   </fieldset>
 
                 </div>
               </td>
             <% }); %>
-            <td class="p-3 fw-bold fs-5 text-center"><%= totals[workerId] || "0" %> h</td>
+            <td class="p-3 fw-bold fs-5 text-center fs-4"><%= totals[workerId] || "0" %> h</td>
           </tr>
         <% }); %>
       </tbody>
     </table>
-    <button type="submit" class="btn btn-dark">Enregistrer</button>
+    <div class="w-100 d-flex justify-content-end">
+      <button type="submit" class="btn btn-success btn-lg d-flex justify-self-end">Enregistrer</button>
+    </div>
   </form>
 
   <script>
