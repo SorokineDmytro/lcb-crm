@@ -33,4 +33,7 @@ app.use("/", calendarRoutes);
 app.use("/", monthlyReportRoutes);
 app.use("/", workersRoutes);
 
-app.listen(3000, () => console.log("CRM running at http://localhost:3000"));
+app.listen(3000, () => {
+  console.log("CRM running at http://localhost:3000");
+  exec("start http://localhost:3000");
+});

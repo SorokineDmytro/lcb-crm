@@ -29,7 +29,6 @@ function prepareMonthlyData(year, month) {
 }
 
 exports.renderMonthly = (req, res) => {
-  console.log("Rendering monthly-report view");
   const year = +req.query.year || dayjs().year();
   const month = +req.query.month || dayjs().month() + 1;
   const { workers, days, fullLogs, totals, workedDays } = prepareMonthlyData(year, month);
