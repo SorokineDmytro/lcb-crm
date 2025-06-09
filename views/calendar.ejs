@@ -147,6 +147,9 @@
         const toggleVisibility = () => {
           const value = select.value;
           if (value === "R" || value === "C") {
+            // Clear all inputs when selecting Repos or Congé
+            timeInputs?.querySelectorAll("input").forEach(input => input.value = "");
+            
             timeInputs?.classList.add("d-none");
           } else {
             timeInputs?.classList.remove("d-none");
